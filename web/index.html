@@ -450,11 +450,11 @@ async function submitAuth(){
       if(chk.data==='name_invalid'){authErr('A név 2–20 karakter legyen.');return}
       if(chk.data==='name_taken'){authErr('Ez a név már foglalt.');return}
       const {data,error}=await sb.auth.signUp({email,password:$('#password').value,options:{data:{name,invite},emailRedirectTo:appUrl()}});
-      if(error){authErr(/registered|exists/i.test(error.message)?'Ezzel az e-mail-címmel már van fiók – jelentkezz be.':/database error/i.test(error.message)?'A regisztráció nem sikerült (hibás kód vagy foglalt név).':error.message);return}
+      if(error){authErr(/rate limit/i.test(error.message)?'Most túl sok e-mail ment ki, próbáld újra egy óra múlva (vagy szólj Biának).':/registered|exists/i.test(error.message)?'Ezzel az e-mail-címmel már van fiók – jelentkezz be.':/database error/i.test(error.message)?'A regisztráció nem sikerült (hibás kód vagy foglalt név).':error.message);return}
       if(!data.session){authMode='login';authMsg={ok:true,text:'Küldtünk egy megerősítő e-mailt. Kattints a benne lévő linkre, utána be tudsz lépni.'};render()}
     }else{
       const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:appUrl()});
-      if(error){authErr(error.message);return}
+      if(error){authErr(/rate limit/i.test(error.message)?'Most túl sok e-mail ment ki, próbáld újra egy óra múlva.':error.message);return}
       authMode='login';authMsg={ok:true,text:'Ha van ilyen fiók, elküldtük a jelszó-visszaállító linket.'};render();
     }
   }finally{const b=$('#authbtn');if(b)b.disabled=false}
