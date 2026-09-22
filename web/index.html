@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kosártipp 26/27</title>
+<meta name="theme-color" content="#DF5427">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23DF5427'/%3E%3Cpath d='M2 16h28M16 2v28M6 6c5 4 5 16 0 20M26 6c-5 4-5 16 0 20' stroke='%23fff' stroke-width='1.8' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --ground:#F1F3F6; --surface:#FFFFFF; --sunk:#E8ECF1; --ink:#111A24; --muted:#5B6878; --line:#D9E0E7;
+  --accent:#DF5427; --accent-ink:#FFFFFF; --accent-soft:#FCE6DD;
+  --good:#1B8A5A; --good-soft:#DDF3E8; --bad:#C23B3B; --bad-soft:#F9E1E1; --warn:#B26A00; --warn-soft:#FBEFD9;
+  --p0:#8352E8; --p1:#0E9F77; --p2:#2D6BDB; --p3:#C2410C;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme:dark;
+    --ground:#0D131A; --surface:#151E28; --sunk:#1B2632; --ink:#E7EDF3; --muted:#94A2B1; --line:#253240;
+    --accent:#FF7447; --accent-ink:#1A0B05; --accent-soft:#3A2016;
+    --good:#4CC98F; --good-soft:#15352A; --bad:#F07575; --bad-soft:#3A1A1A; --warn:#F0B04E; --warn-soft:#3A2C12;
+    --p0:#A98BFF; --p1:#3FD1A6; --p2:#6B9DFF; --p3:#FB923C;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font:16px/1.45 var(--body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{position:sticky;top:0;z-index:5;background:var(--ground);border-bottom:1px solid var(--line)}
+.top-in{max-width:760px;margin:0 auto;padding:12px 16px 0;display:flex;flex-direction:column;gap:8px}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-family:var(--display);font-weight:700;font-size:28px;line-height:1;display:flex;align-items:center;gap:10px}
+.logo svg{width:26px;height:26px;flex:none}
+.logo small{font-weight:500;color:var(--muted);font-size:18px}
+.me{position:relative}
+.mebtn{border:1.5px solid var(--pc);background:var(--surface);border-radius:999px;padding:4px 12px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.mebtn i,.dot{width:9px;height:9px;border-radius:50%;background:var(--pc);display:inline-block;flex:none}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.15);padding:6px;min-width:190px;display:flex;flex-direction:column}
+.menu button{background:none;border:0;text-align:left;padding:9px 10px;border-radius:6px}
+.menu button:hover{background:var(--sunk)}
+.tabs{display:flex;gap:4px}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px 9px;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:.02em;color:var(--muted);text-transform:uppercase}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* login */
+.login{max-width:380px;margin:12vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 22px;display:flex;flex-direction:column;gap:14px}
+.login .logo{font-size:34px}
+.login p{margin:0;color:var(--muted)}
+label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:14px}
+.field{height:46px;border:1.5px solid var(--line);border-radius:8px;background:var(--ground);padding:0 12px;font-size:16px}
+.field:focus{border-color:var(--accent);outline:none}
+.err{color:var(--bad);font-size:14px;margin:0}
+.btn{border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 18px}
+.btn.sm{padding:6px 12px;font-size:14px}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.55;cursor:default}
+
+/* week */
+.weekbar{display:flex;align-items:center;gap:8px;margin-top:18px}
+.navbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none}
+.navbtn:disabled{opacity:.35;cursor:default}
+.weekttl{flex:1;text-align:center;min-width:0}
+.weekttl h2{margin:0;font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1}
+.weekttl p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.status{margin-top:12px;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;justify-content:center;font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-weight:600;font-size:13px;white-space:nowrap}
+.pill.open{background:var(--accent-soft);color:var(--accent)}
+.pill.closed{background:var(--sunk);color:var(--muted)}
+.pill.done{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.strip{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
+.score{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;position:relative;min-width:0}
+.score .n{font-family:var(--display);font-weight:600;font-size:15px;display:flex;align-items:center;gap:6px}
+.score .v{font-family:var(--display);font-weight:700;font-size:32px;line-height:1;font-variant-numeric:tabular-nums;margin-top:4px}
+.score .v small{font-size:15px;color:var(--muted);font-weight:500;margin-left:2px}
+.score.win{border-color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
+.crown{position:absolute;top:8px;right:10px;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pc)}
+
+.day{margin:22px 0 8px;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.matches{display:flex;flex-direction:column;gap:8px}
+.m{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.m-head{display:flex;justify-content:space-between;gap:8px;padding:8px 12px 0;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.picks{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:8px;padding:8px 12px 12px}
+.side{border:1.5px solid var(--line);background:var(--ground);border-radius:8px;padding:10px;font-weight:600;line-height:1.2;text-align:left;display:flex;align-items:center;gap:8px;min-height:54px;overflow-wrap:anywhere;min-width:0}
+.side.away{justify-content:flex-end;text-align:right}
+.side .short{display:none}
+.side .tick{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center}
+button.side:hover:not(:disabled){border-color:var(--accent)}
+.side.sel{border-color:var(--accent);background:var(--accent-soft)}
+.side.sel .tick{background:var(--accent);border-color:var(--accent)}
+.side.sel .tick::after{content:"";width:8px;height:4px;border:solid var(--accent-ink);border-width:0 0 2px 2px;transform:rotate(-45deg) translate(1px,-1px)}
+.side:disabled{cursor:default}
+.side.won{border-color:var(--good)}
+.vs{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px}
+.final{font-family:var(--display);font-weight:700;font-size:26px;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.final.none{color:var(--muted);font-size:18px}
+.m-foot{border-top:1px solid var(--line);background:var(--sunk);padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px}
+.ptip{display:inline-flex;align-items:center;gap:6px}
+.ptip .nm{color:var(--muted)}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+.resform{display:flex;align-items:center;gap:6px;margin-left:auto}
+.resform input{width:52px;height:34px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);text-align:center;font-family:var(--display);font-weight:700;font-size:18px}
+.note{color:var(--muted);font-size:13px;margin-top:22px;text-align:center}
+.note a{color:inherit}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:18px}
+.card h2{margin:0 0 4px;font-family:var(--display);font-size:24px}
+.card .sub{margin:0 0 12px;color:var(--muted);font-size:14px}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+th:first-child,td:first-child{text-align:left}
+td.big{font-family:var(--display);font-weight:700;font-size:22px}
+tr:last-child td{border-bottom:0}
+.champ{padding:14px;border-radius:var(--r);background:var(--accent-soft);margin-bottom:14px}
+.champ .t{font-family:var(--display);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.champ .w{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05}
+.wk-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);align-items:center}
+.wk-row:last-child{border-bottom:0}
+.wk-row button{background:none;border:0;padding:0;text-align:left;font-weight:600}
+.wk-row .res{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.rules ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:62ch}
+.rules h3{font-family:var(--display);font-size:19px;margin:18px 0 6px}
+.empty{color:var(--muted);text-align:center;padding:30px 0}
+
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:22px;width:min(380px,calc(100% - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog form{display:flex;flex-direction:column;gap:12px}
+dialog h2{margin:0;font-family:var(--display)}
+.row{display:flex;gap:8px;justify-content:flex-end}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);z-index:10}
+
+@media (max-width:560px){
+  .side .full{display:none}.side .short{display:inline}
+  .picks{padding:8px 10px 12px;gap:6px}
+  .vs{min-width:46px}
+  .score .v{font-size:28px}
+  .resform{margin-left:0;width:100%}
+  .tab{padding:8px 9px 9px;font-size:17px}
+  .logo small{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top" id="top" hidden>
+  <div class="top-in">
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><path d="M2 16h28M16 2v28M6 6c5 4 5 16 0 20M26 6c-5 4-5 16 0 20" stroke="var(--ground)" stroke-width="1.8" fill="none"/></svg>Kosártipp <small>Női NB I · 26/27</small></div>
+      <div class="me" id="me"></div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="het">Heti tipp</button>
+      <button class="tab" role="tab" data-tab="tabella">Tabella</button>
+      <button class="tab" role="tab" data-tab="szabalyok">Szabályok</button>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="app"><p class="empty">Betöltés…</p></main>
+
+<dialog id="pwdlg">
+  <form id="pwform">
+    <h2>Jelszó módosítása</h2>
+    <label>Új jelszó<input class="field" id="pw1" type="password" minlength="8" autocomplete="new-password" required></label>
+    <label>Új jelszó még egyszer<input class="field" id="pw2" type="password" minlength="8" autocomplete="new-password" required></label>
+    <p class="err" id="pwerr" hidden></p>
+    <div class="row"><button type="button" class="btn ghost" id="pwcancel">Mégse</button><button class="btn" id="pwsave">Mentés</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script>
+const CFG=window.KOSARTIPP_CONFIG||{};
+const sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+const SOURCE='https://mkosz.hu/bajnoksag-musor/x2627/whun/';
+const SHORT={'BKG-PRIMA Szigetszentmiklós':'Szigetszentmiklós','Csata TKK':'Csata','DVTK HUNTHERM':'DVTK','ELTE BEAC Újbuda':'BEAC','ETO Basket':'ETO','KSC Szekszárd':'Szekszárd','NKA Universitas Pécs':'Pécs','Sopron Basket':'Sopron','TFSE':'TFSE','Vasas Akadémia':'Vasas','VBW CEKK Cegléd':'Cegléd'};
+const MON=['jan.','febr.','márc.','ápr.','máj.','jún.','júl.','aug.','szept.','okt.','nov.','dec.'];
+const DOW=['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
+
+let session=null, players=[], matches=[], tips=[], tab='het', week=null, menuOpen=false, pending=new Set(), lockSig='';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+
+/* ---------- idő: minden budapesti helyi időben, "YYYY-MM-DDTHH:MM" szövegként összehasonlítva ---------- */
+const budFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Budapest',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+function bud(d){const p=Object.fromEntries(budFmt.formatToParts(d).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`}
+const now=()=>bud(new Date());
+function addDays(d,n){const x=new Date(d.slice(0,10)+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}
+const dow=d=>new Date(d.slice(0,10)+'T00:00:00Z').getUTCDay();
+const weekOf=dt=>addDays(dt,-((dow(dt)+6)%7));
+const lockOfWeek=w=>addDays(w,5)+'T00:00';                 // szombat 00:00 = péntek 23:59 után (ugyanez az adatbázisban)
+function lockAt(m){const d=lockOfWeek(weekOf(m.dt));return m.dt<d?m.dt:d}
+const isLocked=m=>now()>=lockAt(m);
+const isStarted=m=>now()>=m.dt;
+function fmtDay(d){const [,mo,da]=d.split('-').map(Number);return `${MON[mo-1]} ${da}., ${DOW[dow(d)]}`}
+function fmtShort(d){const [,mo,da]=d.slice(0,10).split('-').map(Number);return `${MON[mo-1]} ${da}.`}
+function weekLabel(w){const e=addDays(w,6);const [,m1,d1]=w.split('-').map(Number),[,m2,d2]=e.split('-').map(Number);return m1===m2?`${MON[m1-1]} ${d1}–${d2}.`:`${MON[m1-1]} ${d1}. – ${MON[m2-1]} ${d2}.`}
+
+/* ---------- adatok ---------- */
+const meId=()=>session?.user?.id;
+const mePlayer=()=>players.find(p=>p.user_id===meId());
+const color=p=>`var(--p${players.indexOf(p)%4})`;
+const winnerOf=m=>m.hs==null||m.as==null?null:(m.hs>m.as?'H':'A');
+const tipOf=(uid,mid)=>tips.find(t=>t.user_id===uid&&t.match_id===mid)?.pick||null;
+const weeks=()=>[...new Set(matches.map(m=>weekOf(m.dt)))].sort();
+const matchesOf=w=>matches.filter(m=>weekOf(m.dt)===w);
+
+function weekStats(w){
+  const ms=matchesOf(w),done=ms.length>0&&ms.every(winnerOf),any=ms.some(winnerOf);
+  const tot={};players.forEach(p=>tot[p.user_id]=ms.filter(m=>winnerOf(m)&&tipOf(p.user_id,m.id)===winnerOf(m)).length);
+  const max=Math.max(0,...Object.values(tot));
+  const leaders=any&&max>0?players.filter(p=>tot[p.user_id]===max):[];
+  return {ms,done,any,tot,leaders,winners:done?leaders:[]};
+}
+function season(){
+  const t={};players.forEach(p=>t[p.user_id]={pts:0,wins:0,tipped:0});
+  matches.forEach(m=>{const w=winnerOf(m);if(!w)return;players.forEach(p=>{const tp=tipOf(p.user_id,m.id);if(tp){t[p.user_id].tipped++;if(tp===w)t[p.user_id].pts++}})});
+  weeks().forEach(w=>weekStats(w).winners.forEach(p=>t[p.user_id].wins++));
+  const order=[...players].sort((a,b)=>t[b.user_id].pts-t[a.user_id].pts||t[b.user_id].wins-t[a.user_id].wins);
+  const played=matches.filter(winnerOf).length;
+  return {t,order,played,over:matches.length>0&&played===matches.length};
+}
+
+async function load(){
+  const [p,m,t]=await Promise.all([
+    sb.from('players').select('user_id,name,is_admin').order('name'),
+    sb.from('matches').select('id,home,away,starts_at,home_score,away_score').order('starts_at'),
+    sb.from('tips').select('user_id,match_id,pick'),
+  ]);
+  const err=p.error||m.error||t.error;
+  if(err){toast('Nem sikerült betölteni: '+err.message);return false}
+  players=p.data;tips=t.data;
+  matches=m.data.map(x=>({id:x.id,home:x.home,away:x.away,dt:bud(new Date(x.starts_at)),hs:x.home_score,as:x.away_score}));
+  lockSig=String(matches.filter(isLocked).length);
+  return true;
+}
+
+/* ---------- műveletek ---------- */
+async function pick(mid,side){
+  const m=matches.find(x=>x.id===mid);if(!m||pending.has(mid))return;
+  if(isLocked(m)){toast('Erre a meccsre már lezárult a tippelés.');render();return}
+  const uid=meId(),cur=tipOf(uid,mid);
+  pending.add(mid);
+  const before=tips;
+  tips=tips.filter(t=>!(t.user_id===uid&&t.match_id===mid));
+  if(cur!==side)tips.push({user_id:uid,match_id:mid,pick:side});
+  render();
+  const {error}=cur===side
+    ?await sb.from('tips').delete().match({user_id:uid,match_id:mid})
+    :await sb.from('tips').upsert({user_id:uid,match_id:mid,pick:side},{onConflict:'user_id,match_id'});
+  pending.delete(mid);
+  if(error){tips=before;toast(/row-level security/i.test(error.message)?'A tippelés erre a meccsre már lezárult.':'Nem sikerült menteni: '+error.message)}
+  render();
+}
+async function saveResult(mid){
+  const h=parseInt($(`#r-${mid}-h`).value,10),a=parseInt($(`#r-${mid}-a`).value,10);
+  if(!(h>=0&&a>=0)||h===a){toast('Add meg a végeredményt (döntetlen nem lehet).');return}
+  const {data,error}=await sb.from('matches').update({home_score:h,away_score:a}).eq('id',mid).select('id');
+  if(error||!data?.length){toast('Nem sikerült menteni'+(error?': '+error.message:' – csak admin írhat eredményt.'));return}
+  const m=matches.find(x=>x.id===mid);m.hs=h;m.as=a;toast('Végeredmény elmentve');render();
+}
+
+/* ---------- megjelenítés ---------- */
+function sideBtn(m,side,mine,locked){
+  const name=side==='H'?m.home:m.away,sel=mine===side,won=winnerOf(m)===side;
+  const label=`<span class="full">${esc(name)}</span><span class="short">${esc(SHORT[name]||name)}</span>`;
+  const tick=`<span class="tick"></span>`;
+  const inner=side==='H'?tick+label:label+tick;
+  return `<button class="side ${side==='A'?'away':''} ${sel?'sel':''} ${locked&&won?'won':''}" ${locked?'disabled':''} data-pick="${m.id}" data-side="${side}" aria-pressed="${sel}" aria-label="${esc(name)} nyer">${inner}</button>`;
+}
+function matchCard(m){
+  const locked=isLocked(m),started=isStarted(m),mine=tipOf(meId(),m.id),w=winnerOf(m);
+  const lockTxt=locked?(w?'végeredmény':started?'eredményre vár':'tippelés lezárva'):(lockAt(m)===m.dt?`tipp a kezdésig (${m.dt.slice(11)})`:'péntek 23:59-ig');
+  const mid=w?`<div class="final">${m.hs}&thinsp;:&thinsp;${m.as}</div>`:`<div class="final none">vs</div>`;
+  const foot=players.map(p=>{
+    const t=tipOf(p.user_id,m.id);
+    let v;
+    if(!locked)v=p.user_id===meId()?(t?'<b>leadva</b>':'<span class="nm">még nincs</span>'):(t===null?'<span class="nm">rejtett</span>':'<b>leadta</b>');
+    else if(!t)v='<span class="nm">nem tippelt</span>';
+    else{const nm=SHORT[t==='H'?m.home:m.away]||(t==='H'?m.home:m.away);v=`<b>${esc(nm)}</b>`+(w?(t===w?' <span class="ok">✓ 1 p</span>':' <span class="no">✗</span>'):'')}
+    return `<span class="ptip"><span class="dot" style="--pc:${color(p)}"></span><span class="nm">${esc(p.name)}</span>${v}</span>`;
+  }).join('');
+  const admin=mePlayer()?.is_admin&&started&&!w?`<div class="resform"><span class="nm">Eredmény:</span><input id="r-${m.id}-h" type="number" inputmode="numeric" min="0" aria-label="${esc(m.home)} pont"><b>:</b><input id="r-${m.id}-a" type="number" inputmode="numeric" min="0" aria-label="${esc(m.away)} pont"><button class="btn sm" data-res="${m.id}">Mentés</button></div>`:'';
+  return `<article class="m"><div class="m-head"><span>${m.dt.slice(11)}</span><span>${lockTxt}</span></div><div class="picks">${sideBtn(m,'H',mine,locked)}<div class="vs">${mid}</div>${sideBtn(m,'A',mine,locked)}</div><div class="m-foot">${foot}${admin}</div></article>`;
+}
+function renderWeek(){
+  const ws=weeks(),i=ws.indexOf(week),st=weekStats(week),ms=st.ms;
+  const open=ms.filter(m=>!isLocked(m));
+  let status;
+  if(st.done)status=`<span class="pill done">Lezárt hét</span>`;
+  else if(open.length)status=`<span class="pill open">Tippelhető</span><span>Határidő: <b>péntek, ${fmtShort(addDays(week,4))} 23:59</b></span>`;
+  else status=`<span class="pill closed">Tippelés lezárva</span>`;
+  const missing=open.filter(m=>!tipOf(meId(),m.id)).length;
+  if(missing)status+=`<span class="pill warn">${missing} meccsre még nem tippeltél</span>`;
+  const strip=players.map(p=>{const win=st.leaders.includes(p);return `<div class="score ${win?'win':''}" style="--pc:${color(p)}">${win?`<span class="crown">${st.done?'Heti győztes':'Vezet'}</span>`:''}<div class="n"><span class="dot"></span>${esc(p.name)}</div><div class="v">${st.tot[p.user_id]}<small>/${ms.filter(winnerOf).length}</small></div></div>`}).join('');
+  let list='',last='';
+  ms.forEach(m=>{const d=m.dt.slice(0,10);if(d!==last){list+=(last?'</div>':'')+`<h3 class="day">${fmtDay(d)}</h3><div class="matches">`;last=d}list+=matchCard(m)});
+  if(last)list+='</div>';
+  return `
+  <div class="weekbar">
+    <button class="navbtn" data-wk="${i-1}" ${i<=0?'disabled':''} aria-label="Előző hét"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+    <div class="weekttl"><h2>${weekLabel(week)}</h2><p>${i+1}. hét a ${ws.length}-ből · ${ms.length} meccs</p></div>
+    <button class="navbtn" data-wk="${i+1}" ${i>=ws.length-1?'disabled':''} aria-label="Következő hét"><svg width="16" height="16" viewBox="0 0 16 16"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+  </div>
+  <div class="status">${status}</div>
+  <div class="strip">${strip}</div>
+  ${list}
+  <p class="note">Koppints arra a csapatra, amelyik szerinted nyer – azonnal mentődik. A többiek tippje a zárás után látszik.<br>Műsor és eredmények: <a href="${SOURCE}" target="_blank" rel="noopener">mkosz.hu</a></p>`;
+}
+function renderTable(){
+  const {t,order,played,over}=season();
+  if(!players.length)return '<p class="empty">Még nincs játékos.</p>';
+  const lead=order[0],tie=order.filter(p=>t[p.user_id].pts===t[lead.user_id].pts&&t[p.user_id].wins===t[lead.user_id].wins);
+  const champ=played?`<div class="champ"><div class="t">${over?'A szezon győztese':'Jelenleg vezet'}</div><div class="w">${tie.map(p=>esc(p.name)).join(' & ')}</div></div>`:'';
+  const rows=order.map((p,ix)=>{const x=t[p.user_id];return `<tr><td><span class="ptip"><span class="dot" style="--pc:${color(p)}"></span><b>${ix+1}. ${esc(p.name)}</b></span></td><td class="big">${x.pts}</td><td>${x.wins}</td><td>${x.tipped?Math.round(100*x.pts/x.tipped)+'%':'–'}</td></tr>`}).join('');
+  const wl=weeks().filter(w=>weekStats(w).any).map(w=>{const s=weekStats(w);
+    return `<div class="wk-row"><button data-goweek="${w}">${weekLabel(w)}</button><div class="res">${s.done?(s.winners.length?s.winners.map(p=>`<span class="pill" style="background:${color(p)};color:#fff">${esc(p.name)} · ${s.tot[p.user_id]}/${s.ms.length}</span>`).join(''):'<span class="pill closed">senki nem talált</span>'):'<span class="pill closed">folyamatban</span>'}</div></div>`}).join('');
+  return `
+  <section class="card"><h2>Szezon tabella</h2>
+    <p class="sub">${played} / ${matches.length} meccs lejátszva · alapszakasz vége: ${matches.length?fmtShort(matches[matches.length-1].dt):'–'}</p>
+    ${champ}
+    <div class="tbl-wrap"><table><thead><tr><th>Játékos</th><th>Pont</th><th>Heti győzelem</th><th>Találati arány</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </section>
+  <section class="card"><h2>Heti győztesek</h2>
+    <p class="sub">Egy hét akkor zárul, ha minden meccsének megvan a végeredménye. Holtversenyben mindenki nyer.</p>
+    ${wl||'<p class="empty">Még nincs lejátszott hét.</p>'}
+  </section>`;
+}
+function renderRules(){
+  return `<section class="card rules"><h2>Szabályok</h2>
+  <h3>Tippelés</h3><ul>
+    <li>Minden héten (hétfő–vasárnap) a Női NB I. A csoport összes meccsére azt tippeled, melyik csapat nyer.</li>
+    <li>Határidő: <b>péntek 23:59</b>. Ha egy meccs ennél korábban kezdődik (pl. szerdai forduló), arra a kezdésig lehet tippelni.</li>
+    <li>A határidőig bármikor átválthatsz. A többiek tippje a zárás után látszik.</li>
+    <li>Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
+  <h3>Pontozás</h3><ul>
+    <li>Minden eltalált győztes <b>1 pont</b>. Kihagyott vagy rossz tipp: 0 pont.</li></ul>
+  <h3>Győztesek</h3><ul>
+    <li><b>Heti győztes:</b> aki a hét meccsein a legtöbb győztest eltalálja. Holtverseny esetén mindenki nyer.</li>
+    <li><b>Szezon győztese:</b> az alapszakasz végén az összpontszám dönt, egyenlőségnél a heti győzelmek száma.</li>
+    <li>Az eredmények naponta automatikusan frissülnek az mkosz.hu-ról.</li></ul>
+  </section>`;
+}
+function renderMe(){
+  const p=mePlayer();
+  $('#me').innerHTML=`<button class="mebtn" id="mebtn" style="--pc:${p?color(p):'var(--muted)'}" aria-expanded="${menuOpen}"><i></i>${esc(p?.name||session.user.email)} ▾</button>${menuOpen?`<div class="menu"><button id="chpw">Jelszó módosítása</button><button id="logout">Kijelentkezés</button></div>`:''}`;
+}
+function render(){
+  const app=$('#app');
+  if(!session){$('#top').hidden=true;app.innerHTML=loginHtml();return}
+  $('#top').hidden=false;renderMe();
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
+  if(!mePlayer()){app.innerHTML=`<section class="card"><h2>A fiókod még nincs játékoshoz rendelve</h2><p class="sub">Szólj Biának, hogy vegyen fel a <code>players</code> táblába (${esc(session.user.email)}).</p></section>`;return}
+  if(!matches.length){app.innerHTML='<p class="empty">Még nincsenek meccsek az adatbázisban.</p>';return}
+  app.innerHTML=tab==='het'?renderWeek():tab==='tabella'?renderTable():renderRules();
+}
+function loginHtml(){
+  return `<form class="login" id="login">
+    <div class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><path d="M2 16h28M16 2v28M6 6c5 4 5 16 0 20M26 6c-5 4-5 16 0 20" stroke="var(--surface)" stroke-width="1.8" fill="none"/></svg>Kosártipp</div>
+    <p>Női NB I. tippverseny – jelentkezz be a saját fiókoddal.</p>
+    <label>E-mail<input class="field" id="email" type="email" autocomplete="username" required></label>
+    <label>Jelszó<input class="field" id="password" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="loginerr" hidden></p>
+    <button class="btn" id="loginbtn">Bejelentkezés</button>
+  </form>`;
+}
+let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,4200)}
+const defaultWeek=()=>{const ws=weeks();return ws.find(w=>matchesOf(w).some(m=>!isLocked(m)))||ws[ws.length-1]};
+
+/* ---------- események ---------- */
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='login')return;e.preventDefault();
+  const btn=$('#loginbtn'),err=$('#loginerr');btn.disabled=true;err.hidden=true;
+  const {error}=await sb.auth.signInWithPassword({email:$('#email').value.trim(),password:$('#password').value});
+  btn.disabled=false;
+  if(error){err.textContent=/invalid/i.test(error.message)?'Hibás e-mail vagy jelszó.':error.message;err.hidden=false}
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');
+  if(menuOpen&&(!b||!b.closest('.me'))){menuOpen=false;renderMe()}
+  if(!b)return;
+  if(b.id==='mebtn'){menuOpen=!menuOpen;renderMe();return}
+  if(b.id==='logout'){menuOpen=false;sb.auth.signOut();return}
+  if(b.id==='chpw'){menuOpen=false;renderMe();$('#pwerr').hidden=true;$('#pwform').reset();$('#pwdlg').showModal();return}
+  if(b.id==='pwcancel'){$('#pwdlg').close();return}
+  if(b.dataset.tab){tab=b.dataset.tab;ls('tab',tab);render();scrollTo(0,0);return}
+  if(b.dataset.wk!==undefined){week=weeks()[+b.dataset.wk];render();return}
+  if(b.dataset.goweek){week=b.dataset.goweek;tab='het';render();scrollTo(0,0);return}
+  if(b.dataset.pick){pick(b.dataset.pick,b.dataset.side);return}
+  if(b.dataset.res){saveResult(b.dataset.res);return}
+});
+$('#pwform').addEventListener('submit',async e=>{
+  e.preventDefault();const a=$('#pw1').value,b=$('#pw2').value,err=$('#pwerr');
+  if(a!==b){err.textContent='A két jelszó nem egyezik.';err.hidden=false;return}
+  $('#pwsave').disabled=true;
+  const {error}=await sb.auth.updateUser({password:a});
+  $('#pwsave').disabled=false;
+  if(error){err.textContent=error.message;err.hidden=false;return}
+  $('#pwdlg').close();toast('Jelszó módosítva');
+});
+document.addEventListener('visibilitychange',async()=>{if(!document.hidden&&session&&await load())render()});
+setInterval(()=>{const s=String(matches.filter(isLocked).length);if(session&&s!==lockSig){lockSig=s;render()}},30000);
+
+/* ---------- indulás ---------- */
+const t0=ls('tab');if(['het','tabella','szabalyok'].includes(t0))tab=t0;
+sb.auth.onAuthStateChange(async(ev,s)=>{
+  const was=meId();session=s;
+  if(!s){players=[];matches=[];tips=[];render();return}
+  if(was===s.user.id&&ev!=='SIGNED_IN')return;
+  setTimeout(async()=>{if(await load()){week=week&&weeks().includes(week)?week:defaultWeek();render()}},0);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+name: Eredmények frissítése (mkosz.hu)
+
+on:
+  schedule:
+    - cron: '30 21 * * *'   # minden este 22:30/23:30 magyar idő szerint
+    - cron: '0 8 * * *'     # és reggel, ha este még nem volt fent
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/update-results.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
