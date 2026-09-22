@@ -62,6 +62,12 @@ label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:14px}
 .field{height:46px;border:1.5px solid var(--line);border-radius:8px;background:var(--ground);padding:0 12px;font-size:16px}
 .field:focus{border-color:var(--accent);outline:none}
 .err{color:var(--bad);font-size:14px;margin:0}
+.info{color:var(--good);font-size:14px;margin:0}
+.switch{display:flex;background:var(--sunk);border-radius:8px;padding:3px;gap:3px}
+.switch button{flex:1;border:0;background:none;border-radius:6px;padding:7px;font-weight:600;color:var(--muted)}
+.switch button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.hint{font-weight:400;color:var(--muted);font-size:12px}
+.forgot{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font-size:14px;align-self:center}
 .btn{border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 18px}
 .btn.sm{padding:6px 12px;font-size:14px}
 .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
@@ -192,7 +198,7 @@ const SHORT={'BKG-PRIMA Szigetszentmiklós':'Szigetszentmiklós','Csata TKK':'Cs
 const MON=['jan.','febr.','márc.','ápr.','máj.','jún.','júl.','aug.','szept.','okt.','nov.','dec.'];
 const DOW=['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
 
-let session=null, players=[], matches=[], tips=[], tab='het', week=null, menuOpen=false, pending=new Set(), lockSig='';
+let authMode='login', authMsg=null, session=null, players=[], matches=[], tips=[], tab='het', week=null, menuOpen=false, pending=new Set(), lockSig='';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
@@ -351,6 +357,8 @@ function renderRules(){
     <li>Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
   <h3>Pontozás</h3><ul>
     <li>Minden eltalált győztes <b>1 pont</b>. Kihagyott vagy rossz tipp: 0 pont.</li></ul>
+  <h3>Csatlakozás</h3><ul>
+    <li>Regisztrálni a meghívókóddal lehet. Aki elsőként regisztrál, az az admin: ő tud kézzel eredményt beírni, ha az automatikus frissítés elakad.</li></ul>
   <h3>Győztesek</h3><ul>
     <li><b>Heti győztes:</b> aki a hét meccsein a legtöbb győztest eltalálja. Holtverseny esetén mindenki nyer.</li>
     <li><b>Szezon győztese:</b> az alapszakasz végén az összpontszám dönt, egyenlőségnél a heti győzelmek száma.</li>
@@ -366,35 +374,63 @@ function render(){
   if(!session){$('#top').hidden=true;app.innerHTML=loginHtml();return}
   $('#top').hidden=false;renderMe();
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
-  if(!mePlayer()){app.innerHTML=`<section class="card"><h2>A fiókod még nincs játékoshoz rendelve</h2><p class="sub">Szólj Biának, hogy vegyen fel a <code>players</code> táblába (${esc(session.user.email)}).</p></section>`;return}
+  if(!mePlayer()){app.innerHTML=`<section class="card"><h2>Ez a fiók nem tagja a játéknak</h2><p class="sub">${esc(session.user.email)} – regisztrálj újra a meghívókóddal, vagy szólj Biának.</p></section>`;return}
   if(!matches.length){app.innerHTML='<p class="empty">Még nincsenek meccsek az adatbázisban.</p>';return}
   app.innerHTML=tab==='het'?renderWeek():tab==='tabella'?renderTable():renderRules();
 }
 function loginHtml(){
-  return `<form class="login" id="login">
-    <div class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><path d="M2 16h28M16 2v28M6 6c5 4 5 16 0 20M26 6c-5 4-5 16 0 20" stroke="var(--surface)" stroke-width="1.8" fill="none"/></svg>Kosártipp</div>
-    <p>Női NB I. tippverseny – jelentkezz be a saját fiókoddal.</p>
+  const m=authMode,msg=authMsg?`<p class="${authMsg.ok?'info':'err'}" id="autherr">${esc(authMsg.text)}</p>`:'<p class="err" id="autherr" hidden></p>';
+  const logo=`<div class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><path d="M2 16h28M16 2v28M6 6c5 4 5 16 0 20M26 6c-5 4-5 16 0 20" stroke="var(--surface)" stroke-width="1.8" fill="none"/></svg>Kosártipp</div>`;
+  if(m==='forgot')return `<form class="login" id="auth">${logo}
+    <p>Add meg az e-mail-címed, és küldünk egy linket, amivel új jelszót állíthatsz be.</p>
     <label>E-mail<input class="field" id="email" type="email" autocomplete="username" required></label>
-    <label>Jelszó<input class="field" id="password" type="password" autocomplete="current-password" required></label>
-    <p class="err" id="loginerr" hidden></p>
-    <button class="btn" id="loginbtn">Bejelentkezés</button>
-  </form>`;
+    ${msg}<button class="btn" id="authbtn">Link küldése</button>
+    <button type="button" class="forgot" data-mode="login">Vissza a bejelentkezéshez</button></form>`;
+  return `<form class="login" id="auth">${logo}
+    <p>Női NB I. tippverseny</p>
+    <div class="switch" role="tablist"><button type="button" role="tab" data-mode="login" aria-selected="${m==='login'}">Bejelentkezés</button><button type="button" role="tab" data-mode="signup" aria-selected="${m==='signup'}">Regisztráció</button></div>
+    ${m==='signup'?'<label>Név <span class="hint">– így látnak a többiek</span><input class="field" id="name" autocomplete="nickname" minlength="2" maxlength="20" required></label>':''}
+    <label>E-mail<input class="field" id="email" type="email" autocomplete="username" required></label>
+    <label>Jelszó${m==='signup'?' <span class="hint">– legalább 8 karakter</span>':''}<input class="field" id="password" type="password" ${m==='signup'?'minlength="8" autocomplete="new-password"':'autocomplete="current-password"'} required></label>
+    ${m==='signup'?'<label>Meghívókód <span class="hint">– Biától kapod</span><input class="field" id="invite" autocomplete="off" required></label>':''}
+    ${msg}<button class="btn" id="authbtn">${m==='signup'?'Regisztráció':'Bejelentkezés'}</button>
+    ${m==='login'?'<button type="button" class="forgot" data-mode="forgot">Elfelejtett jelszó</button>':''}</form>`;
+}
+const appUrl=()=>location.origin+location.pathname;
+function authErr(text){const e=$('#autherr');e.className='err';e.textContent=text;e.hidden=false}
+async function submitAuth(){
+  const email=$('#email').value.trim(),btn=$('#authbtn');btn.disabled=true;authMsg=null;
+  try{
+    if(authMode==='login'){
+      const {error}=await sb.auth.signInWithPassword({email,password:$('#password').value});
+      if(error)authErr(/invalid/i.test(error.message)?'Hibás e-mail vagy jelszó.':/confirm/i.test(error.message)?'Előbb erősítsd meg az e-mail-címed a kiküldött linkkel.':error.message);
+    }else if(authMode==='signup'){
+      const name=$('#name').value.trim(),invite=$('#invite').value.trim();
+      const chk=await sb.rpc('signup_check',{p_name:name,p_invite:invite});
+      if(chk.error){authErr('Nem sikerült ellenőrizni: '+chk.error.message);return}
+      if(chk.data==='invite'){authErr('Hibás meghívókód.');return}
+      if(chk.data==='name_invalid'){authErr('A név 2–20 karakter legyen.');return}
+      if(chk.data==='name_taken'){authErr('Ez a név már foglalt.');return}
+      const {data,error}=await sb.auth.signUp({email,password:$('#password').value,options:{data:{name,invite},emailRedirectTo:appUrl()}});
+      if(error){authErr(/registered|exists/i.test(error.message)?'Ezzel az e-mail-címmel már van fiók – jelentkezz be.':/database error/i.test(error.message)?'A regisztráció nem sikerült (hibás kód vagy foglalt név).':error.message);return}
+      if(!data.session){authMode='login';authMsg={ok:true,text:'Küldtünk egy megerősítő e-mailt. Kattints a benne lévő linkre, utána be tudsz lépni.'};render()}
+    }else{
+      const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:appUrl()});
+      if(error){authErr(error.message);return}
+      authMode='login';authMsg={ok:true,text:'Ha van ilyen fiók, elküldtük a jelszó-visszaállító linket.'};render();
+    }
+  }finally{const b=$('#authbtn');if(b)b.disabled=false}
 }
 let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,4200)}
 const defaultWeek=()=>{const ws=weeks();return ws.find(w=>matchesOf(w).some(m=>!isLocked(m)))||ws[ws.length-1]};
 
 /* ---------- események ---------- */
-document.addEventListener('submit',async e=>{
-  if(e.target.id!=='login')return;e.preventDefault();
-  const btn=$('#loginbtn'),err=$('#loginerr');btn.disabled=true;err.hidden=true;
-  const {error}=await sb.auth.signInWithPassword({email:$('#email').value.trim(),password:$('#password').value});
-  btn.disabled=false;
-  if(error){err.textContent=/invalid/i.test(error.message)?'Hibás e-mail vagy jelszó.':error.message;err.hidden=false}
-});
+document.addEventListener('submit',e=>{if(e.target.id!=='auth')return;e.preventDefault();submitAuth()});
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');
   if(menuOpen&&(!b||!b.closest('.me'))){menuOpen=false;renderMe()}
   if(!b)return;
+  if(b.dataset.mode){authMode=b.dataset.mode;authMsg=null;render();return}
   if(b.id==='mebtn'){menuOpen=!menuOpen;renderMe();return}
   if(b.id==='logout'){menuOpen=false;sb.auth.signOut();return}
   if(b.id==='chpw'){menuOpen=false;renderMe();$('#pwerr').hidden=true;$('#pwform').reset();$('#pwdlg').showModal();return}
@@ -420,6 +456,7 @@ setInterval(()=>{const s=String(matches.filter(isLocked).length);if(session&&s!=
 /* ---------- indulás ---------- */
 const t0=ls('tab');if(['het','tabella','szabalyok'].includes(t0))tab=t0;
 sb.auth.onAuthStateChange(async(ev,s)=>{
+  if(ev==='PASSWORD_RECOVERY')setTimeout(()=>{$('#pwerr').hidden=true;$('#pwform').reset();$('#pwdlg').showModal()},300);
   const was=meId();session=s;
   if(!s){players=[];matches=[];tips=[];render();return}
   if(was===s.user.id&&ev!=='SIGNED_IN')return;

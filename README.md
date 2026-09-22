@@ -17,12 +17,17 @@ Minden eltalált győztes 1 pontot ér. Van heti győztes és szezongyőztes is.
 2. **SQL Editor → New query:** másold be és futtasd le sorban ezeket:
    - `supabase/schema.sql`
    - `supabase/seed.sql`
-3. **Authentication → Sign In / Providers:** kapcsold ki az **Allow new users to sign up** beállítást, hogy idegenek ne tudjanak regisztrálni.
-4. **Authentication → Users → Add user → Create new user:** hozd létre a három fiókot.
-   - Mindegyiknél add meg az e-mail-címet és egy ideiglenes jelszót.
-   - Pipáld be az **Auto Confirm User** opciót.
-5. **SQL Editor:** a `supabase/players.sql` fájlba írd be a három e-mail-címet, majd futtasd le.
-6. **Project Settings → API:** két adatra lesz szükséged:
+3. **SQL Editor:** állítsd be a meghívókódot. Ezt ne írd bele a repóba, mert a repó publikus:
+   ```sql
+   update public.settings set value = 'IDE_A_TITKOS_KOD' where key = 'join_code';
+   ```
+   Amíg nincs kód beállítva, senki nem tud regisztrálni. Használj legalább 8 karakteres, nem kitalálható kódot.
+4. **Authentication → URL Configuration → Site URL:** írd be ezt: `https://baloghbianka.github.io/KosarMix/`. Ide visznek a megerősítő és a jelszó-visszaállító e-mailek linkjei.
+5. **Authentication → Sign In / Providers → Email:** alapból be van kapcsolva a **Confirm email**.
+   - Így regisztráció után mindenki kap egy megerősítő e-mailt.
+   - Ha ezt nem szeretnéd, kapcsold ki. Akkor regisztráció után azonnal be lehet lépni.
+   - Az ingyenes csomag óránként csak néhány e-mailt küld, de három embernek ez bőven elég.
+6. **Project Settings → API Keys:** két adatra lesz szükséged:
    - a **Project URL**
    - az **anon / publishable** kulcs
 
@@ -48,10 +53,13 @@ A **service_role / secret** kulcs viszont soha nem kerülhet ide.
    - Alternatíva: **New → Static Site**, a repó kiválasztása után **Publish directory:** `web`, a **Build command** mező maradjon üres.
 3. Az oldal címe: `https://kosarmix.onrender.com` (vagy amit a Render kioszt). Minden `git push` után magától frissül.
 
-### 5. Első belépés
-Küldd el Boginak és Tamásnak a címet és az ideiglenes jelszavukat.
-Első belépés után mindenki változtassa meg a jelszavát: a jobb felső sarokban a névre kattintva, a **Jelszó módosítása** menüpontban.
-Innentől senki más, Bia sem tud az ő nevükben tippelni.
+### 5. Regisztráció
+1. **Bia regisztrál elsőként** az oldalon (Regisztráció fül: név, e-mail, jelszó, meghívókód). Az első regisztráló automatikusan admin lesz.
+2. Utána küldd el Boginak és Tamásnak a linket és a meghívókódot. Mindenki a saját fiókjával regisztrál, így más nem tud a nevében tippelni.
+3. Ha már mindenki bent van, a kódot le is lehet tiltani:
+   ```sql
+   update public.settings set value = null where key = 'join_code';
+   ```
 
 ## Tudnivalók
 - **Rájátszás:** a meccsek az mkosz.hu-n valószínűleg másik oldalon lesznek. Ha kisorsolták őket, kell hozzá egy új forrás-URL a szkriptbe.
