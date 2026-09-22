@@ -1,7 +1,9 @@
 -- Kosártipp – adatbázis séma (Supabase SQL Editorban egyszer lefuttatni)
 -- A szabályokat itt, az adatbázis kényszeríti ki, nem a böngésző:
 --   * mindenki csak a saját nevében tippelhet
---   * tippelni/módosítani csak a zárásig lehet (péntek 23:59, vagy a kezdésig, ha az korábbi)
+--   * egy hét meccseire a hét hétfő 0:00-tól a zárásig lehet tippelni
+--     (zárás: péntek 23:59, vagy a kezdés, ha az korábbi)
+--   * a mentett tipp nem módosítható és nem törölhető
 --   * mások tippje csak zárás után olvasható
 --   * regisztrálni csak a meghívókóddal lehet; az első regisztráló lesz az admin
 
@@ -50,9 +52,23 @@ returns timestamptz language sql stable as $$
   )
 $$;
 
+-- Nyitás: a meccs hetének hétfő 0:00-ja (budapesti idő).
+create or replace function public.opens_at(ts timestamptz)
+returns timestamptz language sql stable as $$
+  select date_trunc('week', ts at time zone 'Europe/Budapest') at time zone 'Europe/Budapest'
+$$;
+
+-- Tippelhető-e most a meccs (nyitás és zárás között).
 create or replace function public.match_open(mid text)
 returns boolean language sql stable security definer set search_path = public as $$
-  select exists (select 1 from matches m where m.id = mid and now() < lock_at(m.starts_at))
+  select exists (select 1 from matches m where m.id = mid
+                 and now() >= opens_at(m.starts_at) and now() < lock_at(m.starts_at))
+$$;
+
+-- Látható-e már mindenki tippje (zárás után).
+create or replace function public.match_locked(mid text)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from matches m where m.id = mid and now() >= lock_at(m.starts_at))
 $$;
 
 create or replace function public.is_admin()
@@ -120,11 +136,12 @@ alter table public.matches enable row level security;
 alter table public.tips    enable row level security;
 alter table public.settings enable row level security;
 
+grant usage on schema public to anon, authenticated;
 revoke all on public.players, public.matches, public.tips, public.settings from anon, authenticated;
 revoke all on function public.signup_check(text, text) from public;
 grant execute on function public.signup_check(text, text) to anon, authenticated;
 grant select on public.players, public.matches to authenticated;
-grant select, insert, update, delete on public.tips to authenticated;
+grant select, insert on public.tips to authenticated;   -- módosítás/törlés nincs: a mentett tipp végleges
 grant update (home_score, away_score) on public.matches to authenticated;  -- csak adminnak engedi a policy
 
 drop policy if exists players_read on public.players;
@@ -139,17 +156,16 @@ create policy matches_admin_score on public.matches for update to authenticated
 
 drop policy if exists tips_read on public.tips;
 create policy tips_read on public.tips for select to authenticated
-  using (user_id = auth.uid() or (public.is_player() and not public.match_open(match_id)));
+  using (user_id = auth.uid() or (public.is_player() and public.match_locked(match_id)));
 
 drop policy if exists tips_insert on public.tips;
 create policy tips_insert on public.tips for insert to authenticated
-  with check (user_id = auth.uid() and public.match_open(match_id));
+  with check (user_id = auth.uid() and public.is_player() and public.match_open(match_id));
 
 drop policy if exists tips_update on public.tips;
-create policy tips_update on public.tips for update to authenticated
-  using (user_id = auth.uid() and public.match_open(match_id))
-  with check (user_id = auth.uid() and public.match_open(match_id));
-
 drop policy if exists tips_delete on public.tips;
-create policy tips_delete on public.tips for delete to authenticated
-  using (user_id = auth.uid() and public.match_open(match_id));
+
+-- Ellenőrzés: ennek a két sornak kell megjelennie (INSERT és SELECT az authenticated szerepkörnek).
+select grantee, privilege_type from information_schema.role_table_grants
+where table_schema = 'public' and table_name = 'tips' and grantee in ('anon', 'authenticated')
+order by privilege_type;

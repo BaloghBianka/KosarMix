@@ -103,7 +103,17 @@ label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:14px}
 .side.away{justify-content:flex-end;text-align:right}
 .side .short{display:none}
 .side .tick{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center}
-button.side:hover:not(:disabled){border-color:var(--accent)}
+@media (hover:hover){button.side:hover:not(:disabled){border-color:var(--accent)}}
+.side.saved{border-color:var(--good);background:var(--good-soft)}
+.side.saved .tick{background:var(--good);border-color:var(--good)}
+.side.saved .tick::after{content:"";width:8px;height:4px;border:solid #fff;border-width:0 0 2px 2px;transform:rotate(-45deg) translate(1px,-1px)}
+.side:disabled:not(.sel):not(.saved):not(.won){opacity:.6}
+.savebar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:4}
+.savebar p{margin:0;flex:1;min-width:160px;font-size:14px}
+.savebar p b{display:block;font-size:16px}
+.savebar .row{margin-left:auto}
+.tag{font-weight:700}
+.tag.saved{color:var(--good)}.tag.draft{color:var(--warn)}
 .side.sel{border-color:var(--accent);background:var(--accent-soft)}
 .side.sel .tick{background:var(--accent);border-color:var(--accent)}
 .side.sel .tick::after{content:"";width:8px;height:4px;border:solid var(--accent-ink);border-width:0 0 2px 2px;transform:rotate(-45deg) translate(1px,-1px)}
@@ -198,7 +208,7 @@ const SHORT={'BKG-PRIMA Szigetszentmiklós':'Szigetszentmiklós','Csata TKK':'Cs
 const MON=['jan.','febr.','márc.','ápr.','máj.','jún.','júl.','aug.','szept.','okt.','nov.','dec.'];
 const DOW=['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
 
-let authMode='login', authMsg=null, session=null, players=[], matches=[], tips=[], tab='het', week=null, menuOpen=false, pending=new Set(), lockSig='';
+let authMode='login', authMsg=null, session=null, players=[], matches=[], tips=[], tab='het', week=null, menuOpen=false, drafts={}, confirming=false, saving=false, lockSig='';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
@@ -214,6 +224,8 @@ const lockOfWeek=w=>addDays(w,5)+'T00:00';                 // szombat 00:00 = p�
 function lockAt(m){const d=lockOfWeek(weekOf(m.dt));return m.dt<d?m.dt:d}
 const isLocked=m=>now()>=lockAt(m);
 const isStarted=m=>now()>=m.dt;
+const opensAt=m=>weekOf(m.dt)+'T00:00';                     // a hét hétfő 0:00 (ugyanez az adatbázisban)
+const isOpen=m=>now()>=opensAt(m)&&!isLocked(m);
 function fmtDay(d){const [,mo,da]=d.split('-').map(Number);return `${MON[mo-1]} ${da}., ${DOW[dow(d)]}`}
 function fmtShort(d){const [,mo,da]=d.slice(0,10).split('-').map(Number);return `${MON[mo-1]} ${da}.`}
 function weekLabel(w){const e=addDays(w,6);const [,m1,d1]=w.split('-').map(Number),[,m2,d2]=e.split('-').map(Number);return m1===m2?`${MON[m1-1]} ${d1}–${d2}.`:`${MON[m1-1]} ${d1}. – ${MON[m2-1]} ${d2}.`}
@@ -258,21 +270,32 @@ async function load(){
 }
 
 /* ---------- műveletek ---------- */
-async function pick(mid,side){
-  const m=matches.find(x=>x.id===mid);if(!m||pending.has(mid))return;
-  if(isLocked(m)){toast('Erre a meccsre már lezárult a tippelés.');render();return}
-  const uid=meId(),cur=tipOf(uid,mid);
-  pending.add(mid);
-  const before=tips;
-  tips=tips.filter(t=>!(t.user_id===uid&&t.match_id===mid));
-  if(cur!==side)tips.push({user_id:uid,match_id:mid,pick:side});
-  render();
-  const {error}=cur===side
-    ?await sb.from('tips').delete().match({user_id:uid,match_id:mid})
-    :await sb.from('tips').upsert({user_id:uid,match_id:mid,pick:side},{onConflict:'user_id,match_id'});
-  pending.delete(mid);
-  if(error){tips=before;toast(/row-level security/i.test(error.message)?'A tippelés erre a meccsre már lezárult.':'Nem sikerült menteni: '+error.message)}
-  render();
+const draftKey=()=>'drafts-'+meId();
+function loadDrafts(){try{drafts=JSON.parse(localStorage.getItem(draftKey())||'{}')||{}}catch(e){drafts={}}}
+function storeDrafts(){try{localStorage.setItem(draftKey(),JSON.stringify(drafts))}catch(e){}}
+const pendingOf=w=>matchesOf(w).filter(m=>drafts[m.id]&&isOpen(m)&&!tipOf(meId(),m.id));
+
+function pick(mid,side){
+  const m=matches.find(x=>x.id===mid);if(!m||saving)return;
+  if(tipOf(meId(),mid))return;
+  if(!isOpen(m)){toast(isLocked(m)?'Erre a meccsre már lezárult a tippelés.':'Erre a hétre hétfő 0:00-tól lehet tippelni.');render();return}
+  if(drafts[mid]===side)delete drafts[mid];else drafts[mid]=side;
+  confirming=false;storeDrafts();render();
+}
+async function saveTips(){
+  const list=pendingOf(week);if(!list.length||saving)return;
+  saving=true;render();
+  const rows=list.map(m=>({user_id:meId(),match_id:m.id,pick:drafts[m.id]}));
+  const {error}=await sb.from('tips').insert(rows);
+  saving=false;confirming=false;
+  if(error){
+    if(error.code==='23505')toast('Ezek közül valamelyik tippet már elmentetted – frissítettem az oldalt.');
+    else if(/row-level security/i.test(error.message))toast('Valamelyik meccsre már lezárult (vagy még nem nyílt meg) a tippelés.');
+    else toast('Nem sikerült menteni: '+error.message);
+    await load();render();return;
+  }
+  rows.forEach(r=>{tips.push(r);delete drafts[r.match_id]});storeDrafts();
+  toast(rows.length+' tipp elmentve ✓');render();
 }
 async function saveResult(mid){
   const h=parseInt($(`#r-${mid}-h`).value,10),a=parseInt($(`#r-${mid}-a`).value,10);
@@ -283,41 +306,54 @@ async function saveResult(mid){
 }
 
 /* ---------- megjelenítés ---------- */
-function sideBtn(m,side,mine,locked){
-  const name=side==='H'?m.home:m.away,sel=mine===side,won=winnerOf(m)===side;
+function sideBtn(m,side,saved,draft,canPick){
+  const name=side==='H'?m.home:m.away,won=winnerOf(m)===side;
+  const cls=saved===side?'saved':(!saved&&draft===side?'sel':'');
   const label=`<span class="full">${esc(name)}</span><span class="short">${esc(SHORT[name]||name)}</span>`;
   const tick=`<span class="tick"></span>`;
   const inner=side==='H'?tick+label:label+tick;
-  return `<button class="side ${side==='A'?'away':''} ${sel?'sel':''} ${locked&&won?'won':''}" ${locked?'disabled':''} data-pick="${m.id}" data-side="${side}" aria-pressed="${sel}" aria-label="${esc(name)} nyer">${inner}</button>`;
+  return `<button class="side ${side==='A'?'away':''} ${cls} ${isLocked(m)&&won?'won':''}" ${canPick?'':'disabled'} data-pick="${m.id}" data-side="${side}" aria-pressed="${!!cls}" aria-label="${esc(name)} nyer">${inner}</button>`;
 }
 function matchCard(m){
-  const locked=isLocked(m),started=isStarted(m),mine=tipOf(meId(),m.id),w=winnerOf(m);
-  const lockTxt=locked?(w?'végeredmény':started?'eredményre vár':'tippelés lezárva'):(lockAt(m)===m.dt?`tipp a kezdésig (${m.dt.slice(11)})`:'péntek 23:59-ig');
+  const locked=isLocked(m),open=isOpen(m),started=isStarted(m),w=winnerOf(m);
+  const saved=tipOf(meId(),m.id),draft=drafts[m.id],canPick=open&&!saved&&!saving;
+  const deadline=lockAt(m)===m.dt?`kezdésig (${m.dt.slice(11)})`:'péntek 23:59-ig';
+  let head;
+  if(locked)head=w?'végeredmény':started?'eredményre vár':'tippelés lezárva';
+  else if(!open)head=`tippelés hétfőtől (${fmtShort(weekOf(m.dt))})`;
+  else if(saved)head='<span class="tag saved">✓ mentve</span>';
+  else if(draft)head=`<span class="tag draft">nincs mentve</span> · ${deadline}`;
+  else head=deadline;
   const mid=w?`<div class="final">${m.hs}&thinsp;:&thinsp;${m.as}</div>`:`<div class="final none">vs</div>`;
   const foot=players.map(p=>{
-    const t=tipOf(p.user_id,m.id);
+    const t=tipOf(p.user_id,m.id),isMe=p.user_id===meId();
     let v;
-    if(!locked)v=p.user_id===meId()?(t?'<b>leadva</b>':'<span class="nm">még nincs</span>'):(t===null?'<span class="nm">rejtett</span>':'<b>leadta</b>');
+    if(!locked)v=isMe?(t?'<b>mentve</b>':draft?'<span class="tag draft">kijelölve</span>':'<span class="nm">még nincs</span>'):'<span class="nm">rejtett</span>';
     else if(!t)v='<span class="nm">nem tippelt</span>';
     else{const nm=SHORT[t==='H'?m.home:m.away]||(t==='H'?m.home:m.away);v=`<b>${esc(nm)}</b>`+(w?(t===w?' <span class="ok">✓ 1 p</span>':' <span class="no">✗</span>'):'')}
     return `<span class="ptip"><span class="dot" style="--pc:${color(p)}"></span><span class="nm">${esc(p.name)}</span>${v}</span>`;
   }).join('');
   const admin=mePlayer()?.is_admin&&started&&!w?`<div class="resform"><span class="nm">Eredmény:</span><input id="r-${m.id}-h" type="number" inputmode="numeric" min="0" aria-label="${esc(m.home)} pont"><b>:</b><input id="r-${m.id}-a" type="number" inputmode="numeric" min="0" aria-label="${esc(m.away)} pont"><button class="btn sm" data-res="${m.id}">Mentés</button></div>`:'';
-  return `<article class="m"><div class="m-head"><span>${m.dt.slice(11)}</span><span>${lockTxt}</span></div><div class="picks">${sideBtn(m,'H',mine,locked)}<div class="vs">${mid}</div>${sideBtn(m,'A',mine,locked)}</div><div class="m-foot">${foot}${admin}</div></article>`;
+  return `<article class="m"><div class="m-head"><span>${m.dt.slice(11)}</span><span>${head}</span></div><div class="picks">${sideBtn(m,'H',saved,draft,canPick)}<div class="vs">${mid}</div>${sideBtn(m,'A',saved,draft,canPick)}</div><div class="m-foot">${foot}${admin}</div></article>`;
 }
 function renderWeek(){
   const ws=weeks(),i=ws.indexOf(week),st=weekStats(week),ms=st.ms;
-  const open=ms.filter(m=>!isLocked(m));
+  const open=ms.filter(isOpen),notYet=ms.filter(m=>!isLocked(m)&&!isOpen(m));
   let status;
   if(st.done)status=`<span class="pill done">Lezárt hét</span>`;
   else if(open.length)status=`<span class="pill open">Tippelhető</span><span>Határidő: <b>péntek, ${fmtShort(addDays(week,4))} 23:59</b></span>`;
+  else if(notYet.length)status=`<span class="pill closed">Tippelés hétfő 0:00-tól</span><span>${fmtDay(week)}</span>`;
   else status=`<span class="pill closed">Tippelés lezárva</span>`;
   const missing=open.filter(m=>!tipOf(meId(),m.id)).length;
-  if(missing)status+=`<span class="pill warn">${missing} meccsre még nem tippeltél</span>`;
+  if(missing)status+=`<span class="pill warn">${missing} meccsre még nincs mentett tipped</span>`;
   const strip=players.map(p=>{const win=st.leaders.includes(p);return `<div class="score ${win?'win':''}" style="--pc:${color(p)}">${win?`<span class="crown">${st.done?'Heti győztes':'Vezet'}</span>`:''}<div class="n"><span class="dot"></span>${esc(p.name)}</div><div class="v">${st.tot[p.user_id]}<small>/${ms.filter(winnerOf).length}</small></div></div>`}).join('');
   let list='',last='';
   ms.forEach(m=>{const d=m.dt.slice(0,10);if(d!==last){list+=(last?'</div>':'')+`<h3 class="day">${fmtDay(d)}</h3><div class="matches">`;last=d}list+=matchCard(m)});
   if(last)list+='</div>';
+  const pend=pendingOf(week).length;
+  const bar=!pend?'':confirming
+    ?`<div class="savebar"><p><b>${pend} tipp mentése</b>Mentés után már nem tudod módosítani.</p><div class="row"><button class="btn ghost" id="savecancel" ${saving?'disabled':''}>Mégse</button><button class="btn" id="saveconfirm" ${saving?'disabled':''}>${saving?'Mentés…':'Végleges mentés'}</button></div></div>`
+    :`<div class="savebar"><p><b>${pend} kijelölt tipp</b>Még nincs elmentve.</p><div class="row"><button class="btn" id="saveask">Tippek mentése</button></div></div>`;
   return `
   <div class="weekbar">
     <button class="navbtn" data-wk="${i-1}" ${i<=0?'disabled':''} aria-label="Előző hét"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
@@ -327,7 +363,8 @@ function renderWeek(){
   <div class="status">${status}</div>
   <div class="strip">${strip}</div>
   ${list}
-  <p class="note">Koppints arra a csapatra, amelyik szerinted nyer – azonnal mentődik. A többiek tippje a zárás után látszik.<br>Műsor és eredmények: <a href="${SOURCE}" target="_blank" rel="noopener">mkosz.hu</a></p>`;
+  ${bar}
+  <p class="note">Jelöld ki, melyik csapat nyer, majd nyomd meg a <b>Tippek mentése</b> gombot. A mentett tipp végleges. A többiek tippje a zárás után látszik.<br>Műsor és eredmények: <a href="${SOURCE}" target="_blank" rel="noopener">mkosz.hu</a></p>`;
 }
 function renderTable(){
   const {t,order,played,over}=season();
@@ -352,9 +389,10 @@ function renderRules(){
   return `<section class="card rules"><h2>Szabályok</h2>
   <h3>Tippelés</h3><ul>
     <li>Minden héten (hétfő–vasárnap) a Női NB I. A csoport összes meccsére azt tippeled, melyik csapat nyer.</li>
+    <li>Egy hét meccseire <b>az adott hét hétfő 0:00-tól</b> lehet tippelni.</li>
     <li>Határidő: <b>péntek 23:59</b>. Ha egy meccs ennél korábban kezdődik (pl. szerdai forduló), arra a kezdésig lehet tippelni.</li>
-    <li>A határidőig bármikor átválthatsz. A többiek tippje a zárás után látszik.</li>
-    <li>Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
+    <li>Kijelölés után a <b>Tippek mentése</b> gombbal mentesz. <b>A mentett tipp végleges</b>, nem lehet módosítani. A nem mentett kijelölés nem számít.</li>
+    <li>A többiek tippje a zárás után látszik. Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
   <h3>Pontozás</h3><ul>
     <li>Minden eltalált győztes <b>1 pont</b>. Kihagyott vagy rossz tipp: 0 pont.</li></ul>
   <h3>Csatlakozás</h3><ul>
@@ -439,6 +477,9 @@ document.addEventListener('click',e=>{
   if(b.dataset.wk!==undefined){week=weeks()[+b.dataset.wk];render();return}
   if(b.dataset.goweek){week=b.dataset.goweek;tab='het';render();scrollTo(0,0);return}
   if(b.dataset.pick){pick(b.dataset.pick,b.dataset.side);return}
+  if(b.id==='saveask'){confirming=true;render();return}
+  if(b.id==='savecancel'){confirming=false;render();return}
+  if(b.id==='saveconfirm'){saveTips();return}
   if(b.dataset.res){saveResult(b.dataset.res);return}
 });
 $('#pwform').addEventListener('submit',async e=>{
@@ -458,9 +499,9 @@ const t0=ls('tab');if(['het','tabella','szabalyok'].includes(t0))tab=t0;
 sb.auth.onAuthStateChange(async(ev,s)=>{
   if(ev==='PASSWORD_RECOVERY')setTimeout(()=>{$('#pwerr').hidden=true;$('#pwform').reset();$('#pwdlg').showModal()},300);
   const was=meId();session=s;
-  if(!s){players=[];matches=[];tips=[];render();return}
+  if(!s){players=[];matches=[];tips=[];drafts={};confirming=false;render();return}
   if(was===s.user.id&&ev!=='SIGNED_IN')return;
-  setTimeout(async()=>{if(await load()){week=week&&weeks().includes(week)?week:defaultWeek();render()}},0);
+  setTimeout(async()=>{loadDrafts();if(await load()){week=week&&weeks().includes(week)?week:defaultWeek();render()}},0);
 });
 </script>
 </body>

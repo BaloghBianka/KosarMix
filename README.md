@@ -1,7 +1,7 @@
 # Kosártipp 26/27
 
 Heti tippverseny Bia, Bogi és Tamás részére a Női NB I. A csoport meccseire.
-Minden meccsre azt kell tippelni, melyik csapat nyer. Határidő: péntek 23:59, vagy a kezdés, ha az korábbi.
+Minden meccsre azt kell tippelni, melyik csapat nyer. Egy hét meccseire hétfő 0:00-tól lehet tippelni, a határidő péntek 23:59 (vagy a kezdés, ha az korábbi). A mentett tipp végleges.
 Minden eltalált győztes 1 pontot ér. Van heti győztes és szezongyőztes is.
 
 - **Weboldal:** `web/`. Statikus oldal, ingyen kiszolgálja a GitHub Pages (`.github/workflows/pages.yml`) vagy a Render (`render.yaml`). Elég az egyik.
@@ -60,6 +60,9 @@ A **service_role / secret** kulcs viszont soha nem kerülhet ide.
    ```sql
    update public.settings set value = null where key = 'join_code';
    ```
+
+## Frissítés
+A `supabase/schema.sql` bármikor újra lefuttatható. Megtartja az adatokat és a meghívókódot, csak a szabályokat frissíti.
 
 ## Tudnivalók
 - **Rájátszás:** a meccsek az mkosz.hu-n valószínűleg másik oldalon lesznek. Ha kisorsolták őket, kell hozzá egy új forrás-URL a szkriptbe.
