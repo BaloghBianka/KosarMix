@@ -43,7 +43,8 @@ async function main() {
 
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error('Hiányzik a SUPABASE_URL vagy a SUPABASE_SERVICE_ROLE_KEY.');
-  const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
+  // Régi (legacy) service_role kulcs: JWT, mehet Bearerként is. Új sb_secret_ kulcs: csak apikey fejlécben.
+  const headers = { apikey: key, 'Content-Type': 'application/json', ...(key.startsWith('ey') ? { Authorization: `Bearer ${key}` } : {}) };
 
   // 1) műsor: új meccsek + időpont-változások
   const sched = rows.map(({ id, home, away, starts_at }) => ({ id, home, away, starts_at }));
