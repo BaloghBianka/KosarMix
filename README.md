@@ -4,7 +4,7 @@ Heti tippverseny Bia, Bogi és Tamás részére a Női NB I. A csoport meccseire
 Minden meccsre azt kell tippelni, melyik csapat nyer. Határidő: péntek 23:59, vagy a kezdés, ha az korábbi.
 Minden eltalált győztes 1 pontot ér. Van heti győztes és szezongyőztes is.
 
-- **Weboldal:** `web/`. Statikus oldal, a Render szolgálja ki ingyenes Static Site-ként (`render.yaml`).
+- **Weboldal:** `web/`. Statikus oldal, ingyen kiszolgálja a GitHub Pages (`.github/workflows/pages.yml`) vagy a Render (`render.yaml`). Elég az egyik.
 - **Bejelentkezés és adatbázis:** Supabase (ingyenes csomag).
   - A határidőt és azt, hogy mindenki csak a saját nevében tippelhessen, maga az adatbázis ellenőrzi (`supabase/schema.sql`).
 - **Eredmények:** egy GitHub Action naponta kétszer behúzza az mkosz.hu-ról (`scripts/update-results.mjs`).
@@ -36,7 +36,12 @@ A **service_role / secret** kulcs viszont soha nem kerülhet ide.
    - `SUPABASE_SERVICE_ROLE_KEY`: a Supabase **service_role / secret** kulcsa. Ez titok, csak ide kerülhet.
 2. **Actions** fül → **Eredmények frissítése** → **Run workflow:** futtasd le egyszer kézzel, hogy lásd, működik-e.
 
-### 4. Render (weboldal)
+### 4/a. GitHub Pages (weboldal)
+1. **Settings → Pages → Source:** válaszd a **GitHub Actions** lehetőséget.
+2. **Actions** fül → **Weboldal kitelepítése** → **Run workflow**.
+3. Az oldal címe: `https://baloghbianka.github.io/KosarMix/`. Minden `web/` módosítás után magától frissül.
+
+### 4/b. Render (weboldal, a GitHub Pages helyett vagy mellett)
 1. Regisztrálj a https://render.com oldalon GitHub-fiókkal.
 2. **New → Blueprint**, válaszd ki a `KosarMix` repót, majd kattints az **Apply** gombra.
    - A `render.yaml` alapján létrejön egy ingyenes Static Site.
