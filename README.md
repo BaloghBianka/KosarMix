@@ -4,7 +4,7 @@ Heti tippverseny Bia, Bogi és Tamás részére a Női NB I. A csoport meccseire
 Minden meccsre azt kell tippelni, melyik csapat nyer. Határidő: péntek 23:59, vagy a kezdés, ha az korábbi.
 Minden eltalált győztes 1 pontot ér. Van heti győztes és szezongyőztes is.
 
-- **Weboldal:** `web/`. Statikus oldal, GitHub Pages szolgálja ki.
+- **Weboldal:** `web/`. Statikus oldal, a Render szolgálja ki ingyenes Static Site-ként (`render.yaml`).
 - **Bejelentkezés és adatbázis:** Supabase (ingyenes csomag).
   - A határidőt és azt, hogy mindenki csak a saját nevében tippelhessen, maga az adatbázis ellenőrzi (`supabase/schema.sql`).
 - **Eredmények:** egy GitHub Action naponta kétszer behúzza az mkosz.hu-ról (`scripts/update-results.mjs`).
@@ -30,18 +30,20 @@ Minden eltalált győztes 1 pontot ér. Van heti győztes és szezongyőztes is.
 Írd be a `web/config.js` fájlba a Project URL-t és az anon kulcsot. Az anon kulcs nyilvános, ezért nyugodtan lehet a kódban.
 A **service_role / secret** kulcs viszont soha nem kerülhet ide.
 
-### 3. GitHub
-1. Hozz létre egy új repót (pl. `kosartipp`), és töltsd fel ezt a mappát.
-2. **Settings → Pages → Source:** válaszd a **GitHub Actions** lehetőséget.
-3. **Settings → Secrets and variables → Actions → New repository secret:** vegyél fel két titkot:
+### 3. GitHub (napi eredményfrissítés)
+1. **Settings → Secrets and variables → Actions → New repository secret:** vegyél fel két titkot:
    - `SUPABASE_URL`: a Project URL
    - `SUPABASE_SERVICE_ROLE_KEY`: a Supabase **service_role / secret** kulcsa. Ez titok, csak ide kerülhet.
-4. **Actions** fül:
-   - Futtasd le a **Weboldal kitelepítése** workflow-t (utána minden `web/` módosításnál magától fut).
-   - Futtasd le egyszer kézzel az **Eredmények frissítése** workflow-t, hogy lásd, működik-e.
-5. Az oldal címe ez lesz: `https://<github-felhasznalonev>.github.io/kosartipp/`
+2. **Actions** fül → **Eredmények frissítése** → **Run workflow:** futtasd le egyszer kézzel, hogy lásd, működik-e.
 
-### 4. Első belépés
+### 4. Render (weboldal)
+1. Regisztrálj a https://render.com oldalon GitHub-fiókkal.
+2. **New → Blueprint**, válaszd ki a `KosarMix` repót, majd kattints az **Apply** gombra.
+   - A `render.yaml` alapján létrejön egy ingyenes Static Site.
+   - Alternatíva: **New → Static Site**, a repó kiválasztása után **Publish directory:** `web`, a **Build command** mező maradjon üres.
+3. Az oldal címe: `https://kosarmix.onrender.com` (vagy amit a Render kioszt). Minden `git push` után magától frissül.
+
+### 5. Első belépés
 Küldd el Boginak és Tamásnak a címet és az ideiglenes jelszavukat.
 Első belépés után mindenki változtassa meg a jelszavát: a jobb felső sarokban a névre kattintva, a **Jelszó módosítása** menüpontban.
 Innentől senki más, Bia sem tud az ő nevükben tippelni.

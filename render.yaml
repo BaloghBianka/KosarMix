@@ -1,0 +1,11 @@
+# Render Blueprint – a weboldal ingyenes Static Site-ként
+services:
+  - type: web
+    name: kosarmix
+    runtime: static
+    buildCommand: echo "nincs build lépés"
+    staticPublishPath: ./web
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
