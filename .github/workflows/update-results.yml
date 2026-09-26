@@ -2,8 +2,8 @@ name: Eredmények frissítése (mkosz.hu)
 
 on:
   schedule:
-    - cron: '30 21 * * *'   # minden este 22:30/23:30 magyar idő szerint
-    - cron: '0 8 * * *'     # és reggel, ha este még nem volt fent
+    - cron: '*/30 16-22 * * *'  # esténként félóránként (kb. 18:00–24:00 magyar idő), a meccsek végére
+    - cron: '15 6 * * *'        # és reggel egyszer, ha este még nem volt fent az eredmény
   workflow_dispatch:
 
 jobs:
