@@ -388,19 +388,22 @@ function renderTable(){
 function renderRules(){
   return `<section class="card rules"><h2>Szabályok</h2>
   <h3>Tippelés</h3><ul>
-    <li>Minden héten (hétfő–vasárnap) a Női NB I. A csoport összes meccsére azt tippeled, melyik csapat nyer.</li>
+    <li>A Női NB I. A csoport minden meccsére azt tippeled, <b>melyik csapat nyer</b>. Döntetlen kosárlabdában nincs.</li>
+    <li><b>Határidő: minden meccsre a kezdéséig</b> lehet tippelni. A meccs kártyáján látszik, meddig (pl. „kezdésig (18:00)”).</li>
     <li><b>Előre kb. 2 hónapra</b> lehet tippelni: az aktuális héten kívül a következő 8 hét meccseire is. Minden hétfő 0:00-kor egy újabb hét nyílik meg.</li>
-    <li>Határidő: <b>minden meccsre a kezdéséig</b> lehet tippelni.</li>
-    <li>Kijelölés után a <b>Tippek mentése</b> gombbal mentesz. <b>A mentett tipp végleges</b>, nem lehet módosítani. A nem mentett kijelölés nem számít.</li>
-    <li>A többiek tippje a meccs kezdése után látszik. Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
+    <li>Koppints a csapatra, majd a <b>Tippek mentése</b> gombbal mentsd el. <b>A mentett tipp végleges</b>, nem lehet módosítani. A csak kijelölt, nem mentett tipp nem számít.</li>
+    <li>A többiek tippje az adott meccs kezdése után látszik, addig rejtett.</li>
+    <li>Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
   <h3>Pontozás</h3><ul>
-    <li>Minden eltalált győztes <b>1 pont</b>. Kihagyott vagy rossz tipp: 0 pont.</li></ul>
-  <h3>Csatlakozás</h3><ul>
-    <li>Regisztrálni a meghívókóddal lehet. Aki elsőként regisztrál, az az admin: ő tud kézzel eredményt beírni, ha az automatikus frissítés elakad.</li></ul>
+    <li>Minden eltalált győztes <b>1 pont</b>. Rossz vagy kihagyott tipp: 0 pont.</li></ul>
   <h3>Győztesek</h3><ul>
-    <li><b>Heti győztes:</b> aki a hét meccsein a legtöbb győztest eltalálja. Holtverseny esetén mindenki nyer.</li>
-    <li><b>Szezon győztese:</b> az alapszakasz végén az összpontszám dönt, egyenlőségnél a heti győzelmek száma.</li>
-    <li>Az eredmények naponta automatikusan frissülnek az mkosz.hu-ról.</li></ul>
+    <li><b>Heti győztes:</b> aki az adott hét (hétfő–vasárnap) meccsein a legtöbb győztest eltalálja. A hét akkor zárul, ha minden meccsének megvan az eredménye. Holtverseny esetén mindenki nyer.</li>
+    <li><b>Szezon győztese:</b> az alapszakasz végén az összpontszám dönt, egyenlőségnél a heti győzelmek száma.</li></ul>
+  <h3>Eredmények</h3><ul>
+    <li>Az eredmények automatikusan jönnek az mkosz.hu-ról: esténként félóránként frissül, így egy meccs eredménye általában 1–2 órával a vége után jelenik meg.</li>
+    <li>Ha az automatikus frissítés elakad, az admin kézzel is beírhatja az eredményt.</li></ul>
+  <h3>Csatlakozás</h3><ul>
+    <li>Regisztrálni a meghívókóddal lehet. Aki elsőként regisztrált, az az admin.</li></ul>
   </section>`;
 }
 function renderMe(){
