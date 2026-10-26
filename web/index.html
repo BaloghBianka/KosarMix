@@ -224,7 +224,7 @@ const lockOfWeek=w=>addDays(w,5)+'T00:00';                 // szombat 00:00 = p�
 function lockAt(m){const d=lockOfWeek(weekOf(m.dt));return m.dt<d?m.dt:d}
 const isLocked=m=>now()>=lockAt(m);
 const isStarted=m=>now()>=m.dt;
-const AHEAD_WEEKS=3;                                         // az aktuális hét + 3 hét előre (ugyanez az adatbázisban)
+const AHEAD_WEEKS=8;                                         // az aktuális hét + 8 hét előre, kb. 2 hónap (ugyanez az adatbázisban)
 const opensAt=m=>addDays(weekOf(m.dt),-7*AHEAD_WEEKS)+'T00:00';
 const isOpen=m=>now()>=opensAt(m)&&!isLocked(m);
 function fmtDay(d){const [,mo,da]=d.split('-').map(Number);return `${MON[mo-1]} ${da}., ${DOW[dow(d)]}`}
@@ -390,7 +390,7 @@ function renderRules(){
   return `<section class="card rules"><h2>Szabályok</h2>
   <h3>Tippelés</h3><ul>
     <li>Minden héten (hétfő–vasárnap) a Női NB I. A csoport összes meccsére azt tippeled, melyik csapat nyer.</li>
-    <li><b>Előre 4 tipphétre</b> lehet tippelni: az aktuális héten kívül a következő 3 hét meccseire is. Minden hétfő 0:00-kor egy újabb hét nyílik meg.</li>
+    <li><b>Előre kb. 2 hónapra</b> lehet tippelni: az aktuális héten kívül a következő 8 hét meccseire is. Minden hétfő 0:00-kor egy újabb hét nyílik meg.</li>
     <li>Határidő: <b>péntek 23:59</b>. Ha egy meccs ennél korábban kezdődik (pl. szerdai forduló), arra a kezdésig lehet tippelni.</li>
     <li>Kijelölés után a <b>Tippek mentése</b> gombbal mentesz. <b>A mentett tipp végleges</b>, nem lehet módosítani. A nem mentett kijelölés nem számít.</li>
     <li>A többiek tippje a zárás után látszik. Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>

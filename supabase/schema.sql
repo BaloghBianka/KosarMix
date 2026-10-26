@@ -1,7 +1,7 @@
 -- Kosártipp – adatbázis séma (Supabase SQL Editorban egyszer lefuttatni)
 -- A szabályokat itt, az adatbázis kényszeríti ki, nem a böngésző:
 --   * mindenki csak a saját nevében tippelhet
---   * előre 4 tipphétre lehet tippelni: egy hét meccseire 3 héttel korábban, hétfő 0:00-tól a zárásig
+--   * előre kb. 2 hónapra lehet tippelni: egy hét meccseire 8 héttel korábban, hétfő 0:00-tól a zárásig
 --     (zárás: péntek 23:59, vagy a kezdés, ha az korábbi)
 --   * a mentett tipp nem módosítható és nem törölhető
 --   * mások tippje csak zárás után olvasható
@@ -52,11 +52,11 @@ returns timestamptz language sql stable as $$
   )
 $$;
 
--- Nyitás: a meccs hete előtti 3. hét hétfő 0:00-ja (budapesti idő),
--- így az aktuális héten kívül a következő 3 hétre is lehet tippelni (összesen 4 tipphét).
+-- Nyitás: a meccs hete előtti 8. hét hétfő 0:00-ja (budapesti idő),
+-- így az aktuális héten kívül a következő 8 hétre is lehet tippelni (kb. 2 hónap).
 create or replace function public.opens_at(ts timestamptz)
 returns timestamptz language sql stable as $$
-  select (date_trunc('week', ts at time zone 'Europe/Budapest') - interval '21 days') at time zone 'Europe/Budapest'
+  select (date_trunc('week', ts at time zone 'Europe/Budapest') - interval '56 days') at time zone 'Europe/Budapest'
 $$;
 
 -- Tippelhető-e most a meccs (nyitás és zárás között).
