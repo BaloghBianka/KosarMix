@@ -220,8 +220,7 @@ const now=()=>bud(new Date());
 function addDays(d,n){const x=new Date(d.slice(0,10)+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}
 const dow=d=>new Date(d.slice(0,10)+'T00:00:00Z').getUTCDay();
 const weekOf=dt=>addDays(dt,-((dow(dt)+6)%7));
-const lockOfWeek=w=>addDays(w,5)+'T00:00';                 // szombat 00:00 = péntek 23:59 után (ugyanez az adatbázisban)
-function lockAt(m){const d=lockOfWeek(weekOf(m.dt));return m.dt<d?m.dt:d}
+const lockAt=m=>m.dt;                                        // zárás: a meccs kezdése (ugyanez az adatbázisban)
 const isLocked=m=>now()>=lockAt(m);
 const isStarted=m=>now()>=m.dt;
 const AHEAD_WEEKS=8;                                         // az aktuális hét + 8 hét előre, kb. 2 hónap (ugyanez az adatbázisban)
@@ -318,7 +317,7 @@ function sideBtn(m,side,saved,draft,canPick){
 function matchCard(m){
   const locked=isLocked(m),open=isOpen(m),started=isStarted(m),w=winnerOf(m);
   const saved=tipOf(meId(),m.id),draft=drafts[m.id],canPick=open&&!saved&&!saving;
-  const deadline=lockAt(m)===m.dt?`kezdésig (${m.dt.slice(11)})`:'péntek 23:59-ig';
+  const deadline=`kezdésig (${m.dt.slice(11)})`;
   let head;
   if(locked)head=w?'végeredmény':started?'eredményre vár':'tippelés lezárva';
   else if(!open)head=`tippelés ${fmtShort(opensAt(m))} hétfőtől`;
@@ -342,7 +341,7 @@ function renderWeek(){
   const open=ms.filter(isOpen),notYet=ms.filter(m=>!isLocked(m)&&!isOpen(m));
   let status;
   if(st.done)status=`<span class="pill done">Lezárt hét</span>`;
-  else if(open.length)status=`<span class="pill open">Tippelhető</span><span>Határidő: <b>péntek, ${fmtShort(addDays(week,4))} 23:59</b></span>`;
+  else if(open.length)status=`<span class="pill open">Tippelhető</span><span>Határidő: <b>minden meccsre a kezdésig</b></span>`;
   else if(notYet.length)status=`<span class="pill closed">Még nem tippelhető</span><span>Nyílik: <b>${fmtDay(opensAt(notYet[0]).slice(0,10))} 0:00</b></span>`;
   else status=`<span class="pill closed">Tippelés lezárva</span>`;
   const missing=open.filter(m=>!tipOf(meId(),m.id)).length;
@@ -365,7 +364,7 @@ function renderWeek(){
   <div class="strip">${strip}</div>
   ${list}
   ${bar}
-  <p class="note">Jelöld ki, melyik csapat nyer, majd nyomd meg a <b>Tippek mentése</b> gombot. A mentett tipp végleges. A többiek tippje a zárás után látszik.<br>Műsor és eredmények: <a href="${SOURCE}" target="_blank" rel="noopener">mkosz.hu</a></p>`;
+  <p class="note">Jelöld ki, melyik csapat nyer, majd nyomd meg a <b>Tippek mentése</b> gombot. A mentett tipp végleges. A többiek tippje a meccs kezdése után látszik.<br>Műsor és eredmények: <a href="${SOURCE}" target="_blank" rel="noopener">mkosz.hu</a></p>`;
 }
 function renderTable(){
   const {t,order,played,over}=season();
@@ -391,9 +390,9 @@ function renderRules(){
   <h3>Tippelés</h3><ul>
     <li>Minden héten (hétfő–vasárnap) a Női NB I. A csoport összes meccsére azt tippeled, melyik csapat nyer.</li>
     <li><b>Előre kb. 2 hónapra</b> lehet tippelni: az aktuális héten kívül a következő 8 hét meccseire is. Minden hétfő 0:00-kor egy újabb hét nyílik meg.</li>
-    <li>Határidő: <b>péntek 23:59</b>. Ha egy meccs ennél korábban kezdődik (pl. szerdai forduló), arra a kezdésig lehet tippelni.</li>
+    <li>Határidő: <b>minden meccsre a kezdéséig</b> lehet tippelni.</li>
     <li>Kijelölés után a <b>Tippek mentése</b> gombbal mentesz. <b>A mentett tipp végleges</b>, nem lehet módosítani. A nem mentett kijelölés nem számít.</li>
-    <li>A többiek tippje a zárás után látszik. Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
+    <li>A többiek tippje a meccs kezdése után látszik. Mindenki csak a saját fiókjával, a saját nevében tippelhet – ezt a szerver ellenőrzi.</li></ul>
   <h3>Pontozás</h3><ul>
     <li>Minden eltalált győztes <b>1 pont</b>. Kihagyott vagy rossz tipp: 0 pont.</li></ul>
   <h3>Csatlakozás</h3><ul>

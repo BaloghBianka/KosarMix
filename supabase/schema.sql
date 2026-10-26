@@ -2,7 +2,7 @@
 -- A szabályokat itt, az adatbázis kényszeríti ki, nem a böngésző:
 --   * mindenki csak a saját nevében tippelhet
 --   * előre kb. 2 hónapra lehet tippelni: egy hét meccseire 8 héttel korábban, hétfő 0:00-tól a zárásig
---     (zárás: péntek 23:59, vagy a kezdés, ha az korábbi)
+--     (zárás: a meccs kezdése)
 --   * a mentett tipp nem módosítható és nem törölhető
 --   * mások tippje csak zárás után olvasható
 --   * regisztrálni csak a meghívókóddal lehet; az első regisztráló lesz az admin
@@ -42,14 +42,10 @@ create table if not exists public.tips (
   primary key (user_id, match_id)
 );
 
--- Zárás időpontja: a meccs hetének (hétfő–vasárnap, budapesti idő) szombat 00:00-ja,
--- vagy a kezdés, ha az korábbi.
+-- Zárás időpontja: a meccs kezdése.
 create or replace function public.lock_at(ts timestamptz)
 returns timestamptz language sql stable as $$
-  select least(
-    ts,
-    (date_trunc('week', ts at time zone 'Europe/Budapest') + interval '5 days') at time zone 'Europe/Budapest'
-  )
+  select ts
 $$;
 
 -- Nyitás: a meccs hete előtti 8. hét hétfő 0:00-ja (budapesti idő),

@@ -1,7 +1,7 @@
 # Kosártipp 26/27
 
 Heti tippverseny Bia, Bogi és Tamás részére a Női NB I. A csoport meccseire.
-Minden meccsre azt kell tippelni, melyik csapat nyer. Előre kb. 2 hónapra lehet tippelni (az aktuális + a következő 8 hét), a határidő péntek 23:59 (vagy a kezdés, ha az korábbi). A mentett tipp végleges.
+Minden meccsre azt kell tippelni, melyik csapat nyer. Előre kb. 2 hónapra lehet tippelni (az aktuális + a következő 8 hét), minden meccsre a kezdéséig. A mentett tipp végleges.
 Minden eltalált győztes 1 pontot ér. Van heti győztes és szezongyőztes is.
 
 - **Weboldal:** `web/`. Statikus oldal, ingyen kiszolgálja a GitHub Pages (`.github/workflows/pages.yml`) vagy a Render (`render.yaml`). Elég az egyik.
